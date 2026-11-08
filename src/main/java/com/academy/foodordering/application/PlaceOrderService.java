@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * First vertical slice: order REQUEST INTAKE. Does not accept a restaurant
@@ -22,6 +23,7 @@ public class PlaceOrderService {
     private final OrderRepository repository;
     private final Clock clock;
 
+    @Autowired
     public PlaceOrderService(MenuCatalog catalog, OrderRepository repository) {
         this(catalog, repository, Clock.systemUTC());
     }

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Service
 public class PlaceOrderService {
+    private static final Logger LOG = LoggerFactory.getLogger(PlaceOrderService.class);
     private final MenuCatalog catalog;
     private final OrderRepository repository;
     private final Clock clock;
@@ -83,6 +86,8 @@ public class PlaceOrderService {
         var order = new Order(UUID.randomUUID(), command.customerId(), menu.code(),
                 lines, total, Instant.now(clock));
         repository.save(order);
+        LOG.info("event=order_intake_recorded orderId={} restaurantId={} itemCount={} quotedTotalCents={}",
+                order.id(), order.restaurantId(), order.lines().size(), order.quotedTotalCents());
         return order;
     }
 }

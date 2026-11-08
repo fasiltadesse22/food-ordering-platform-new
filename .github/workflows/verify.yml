@@ -19,3 +19,38 @@ jobs:
         run: mvn -B -ntp verify
       - name: Confirm packaged runnable jar
         run: test -f target/food-ordering-platform-0.1.0-SNAPSHOT.jar
+
+      - name: Smoke-test packaged app over HTTP
+        shell: bash
+        run: |
+          set -euo pipefail
+          java -jar target/food-ordering-platform-0.1.0-SNAPSHOT.jar --server.port=18080 > /tmp/food-ordering-app.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:18080/api/restaurants/cedar-kitchen/menu >/tmp/fop-menu.json 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          test -s /tmp/fop-menu.json || { cat /tmp/food-ordering-app.log; exit 1; }
+          status=$(curl -sS -o /tmp/fop-success.json -D /tmp/fop-headers.txt -w '%{http_code}'             -X POST http://127.0.0.1:18080/api/orders             -H 'Content-Type: application/json' -H 'X-Request-ID: ci-intake-001'             -d '{"customerId":"6f1595f8-02bc-4484-9800-810a98b611ee","restaurantId":"cedar-kitchen","items":[{"menuItemCode":"lentil-bowl","quantity":2}]}')
+          test "$status" = "201"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/fop-success.json'))
+          assert data['intakeStatus']=='REQUESTED_AWAITING_RESTAURANT'
+          assert data['restaurantDecision']=='PENDING'
+          assert data['paymentStatus']=='NOT_STARTED'
+          assert data['quotedTotalCents']==2500
+          assert 'orderId' in data
+          print('LIVE_HTTP_INTAKE_OK orderId='+data['orderId'])
+          PY
+          status=$(curl -sS -o /tmp/fop-rejected.json -w '%{http_code}'             -X POST http://127.0.0.1:18080/api/orders             -H 'Content-Type: application/json'             -d '{"customerId":"6f1595f8-02bc-4484-9800-810a98b611ee","restaurantId":"cedar-kitchen","items":[{"menuItemCode":"seasonal-special","quantity":1}]}')
+          test "$status" = "422"
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/fop-rejected.json'))
+          assert data['code']=='ITEM_UNAVAILABLE'
+          print('LIVE_HTTP_BUSINESS_REJECTION_OK')
+          PY

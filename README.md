@@ -1,4 +1,4 @@
-# Food Ordering Platform — Lesson 1.1.2 running baseline
+# Food Ordering Platform — Lessons 1.1.2 and 1.1.3
 
 **Source of truth:** [Academy roadmap](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/roadmap/MASTER_ROADMAP_V1.md) and [Lesson 1.1.1 domain discovery](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/domain/CLUSTER_1_1_LESSON_1_1_1_DOMAIN_DISCOVERY.md).
 
@@ -52,6 +52,12 @@ No persistent database, process-restart durability, checkout authentication/auth
 ## Verification
 
 `mvn -B -ntp verify` runs JUnit domain/application/HTTP integration tests; [GitHub Actions](https://github.com/fasiltadesse22/food-ordering-platform-new/actions) independently reports actual outcome. Do not claim a passing test unless inspected.
+
+## Lesson 1.1.3 — explicit command decisions and local facts
+
+A typed \`PlaceOrderOutcome\` now distinguishes successful local request intake from business rejection. \`OrderRequestRecorded\` is constructed only after the volatile repository's save returns normally. Infrastructure errors remain uncertain; rejected commands never generate a success fact. The existing \`place()\` and HTTP response behavior remain compatible.
+
+Read [the Lesson 1.1.3 contract](docs/engineering/LESSON_1_1_3_COMMAND_FACT_CONTRACT.md). This is not event publication, durable storage, merchant acceptance, payment processing or idempotency.
 
 ## Execution continuity
 

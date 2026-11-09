@@ -2,6 +2,7 @@ package com.academy.foodordering.application;
 
 import com.academy.foodordering.domain.BusinessRejection;
 import com.academy.foodordering.domain.Order;
+import com.academy.foodordering.domain.OrderRequestRecorded;
 import com.academy.foodordering.domain.Order.OrderLine;
 import java.time.Clock;
 import java.time.Instant;
@@ -38,7 +39,33 @@ public class PlaceOrderService {
         this.clock = clock;
     }
 
+    /**
+     * Explicit local decision: success fact only AFTER save returns normally.
+     * This does not prove durability, publication, or remote delivery.
+     * Unexpected storage errors propagate because a write might have occurred.
+     */
+    public PlaceOrderOutcome handle(PlaceOrderCommand command) {
+        final Order order;
+        try {
+            order = validateCreateAndStore(command);
+        } catch (BusinessRejection rejection) {
+            return new PlaceOrderOutcome.Rejected(rejection.code(), rejection.getMessage());
+        }
+        var fact = new OrderRequestRecorded(order.id(), order.customerId(),
+                order.restaurantId(), order.createdAt(), Instant.now(clock));
+        return new PlaceOrderOutcome.Recorded(order, fact);
+    }
+
+    /** Preserve original UC-001 service/HTTP behavior for existing clients. */
     public Order place(PlaceOrderCommand command) {
+        return switch (handle(command)) {
+            case PlaceOrderOutcome.Recorded result -> result.order();
+            case PlaceOrderOutcome.Rejected rejection ->
+                    throw new BusinessRejection(rejection.code(), rejection.message());
+        };
+    }
+
+    private Order validateCreateAndStore(PlaceOrderCommand command) {
         if (command == null || command.customerId() == null) {
             throw new BusinessRejection("CUSTOMER_REQUIRED", "A customer identifier is required");
         }

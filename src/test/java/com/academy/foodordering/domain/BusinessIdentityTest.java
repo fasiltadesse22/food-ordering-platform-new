@@ -69,9 +69,12 @@ class BusinessIdentityTest {
         assertEquals("cedar-kitchen", fact.restaurantId());
         assertEquals(new OrderId(ORDER), fact.orderIdentity());
         assertEquals(TIME.plusMillis(1), fact.observedAfterSaveAt());
-        assertThrows(IllegalArgumentException.class, () -> new OrderRequestRecorded(
+        // Two wall-clock observations may move backwards under clock corrections.
+        // Timestamps are not a reliable ordering/version guarantee.
+        var correctedClock = new OrderRequestRecorded(
                 new OrderId(ORDER), new CustomerId(CUSTOMER),
-                new RestaurantId("cedar-kitchen"), TIME, TIME.minusMillis(1)));
+                new RestaurantId("cedar-kitchen"), TIME, TIME.minusMillis(1));
+        assertTrue(correctedClock.observedAfterSaveAt().isBefore(correctedClock.orderCreatedAt()));
     }
 
     @Test void outcomeCannotClaimSuccessForMismatchedCustomerOrRestaurantIdentity() {

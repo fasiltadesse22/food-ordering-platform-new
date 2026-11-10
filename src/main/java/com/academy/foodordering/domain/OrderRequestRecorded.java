@@ -23,9 +23,6 @@ public record OrderRequestRecorded(
         Objects.requireNonNull(restaurantIdentity, "restaurantIdentity");
         Objects.requireNonNull(orderCreatedAt, "orderCreatedAt");
         Objects.requireNonNull(observedAfterSaveAt, "observedAfterSaveAt");
-        if (observedAfterSaveAt.isBefore(orderCreatedAt)) {
-            throw new IllegalArgumentException("Post-save observation cannot precede creation");
-        }
     }
     public OrderRequestRecorded(UUID orderId, UUID customerId, String restaurantId,
                                 Instant orderCreatedAt, Instant observedAfterSaveAt) {

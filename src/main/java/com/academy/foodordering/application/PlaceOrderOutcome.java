@@ -15,8 +15,10 @@ public sealed interface PlaceOrderOutcome
         public Recorded {
             Objects.requireNonNull(order, "order");
             Objects.requireNonNull(fact, "fact");
-            if (!order.id().equals(fact.orderId())) {
-                throw new IllegalArgumentException("Fact must refer to the recorded order");
+            if (!order.orderIdentity().equals(fact.orderIdentity())
+                    || !order.customerIdentity().equals(fact.customerIdentity())
+                    || !order.restaurantIdentity().equals(fact.restaurantIdentity())) {
+                throw new IllegalArgumentException("Fact must refer to the same order, customer and restaurant");
             }
         }
     }

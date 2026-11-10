@@ -3,6 +3,9 @@ package com.academy.foodordering.application;
 import com.academy.foodordering.domain.BusinessRejection;
 import com.academy.foodordering.domain.Order;
 import com.academy.foodordering.domain.OrderRequestRecorded;
+import com.academy.foodordering.domain.OrderId;
+import com.academy.foodordering.domain.CustomerId;
+import com.academy.foodordering.domain.RestaurantId;
 import com.academy.foodordering.domain.Order.OrderLine;
 import java.time.Clock;
 import java.time.Instant;
@@ -51,8 +54,8 @@ public class PlaceOrderService {
         } catch (BusinessRejection rejection) {
             return new PlaceOrderOutcome.Rejected(rejection.code(), rejection.getMessage());
         }
-        var fact = new OrderRequestRecorded(order.id(), order.customerId(),
-                order.restaurantId(), order.createdAt(), Instant.now(clock));
+        var fact = new OrderRequestRecorded(order.orderIdentity(), order.customerIdentity(),
+                order.restaurantIdentity(), order.createdAt(), Instant.now(clock));
         return new PlaceOrderOutcome.Recorded(order, fact);
     }
 
@@ -110,8 +113,8 @@ public class PlaceOrderService {
                     listed.priceCents(), lineTotal));
         }
         // UUID identifies intake record; repeated POSTs have NO idempotency promise.
-        var order = new Order(UUID.randomUUID(), command.customerId(), menu.code(),
-                lines, total, Instant.now(clock));
+        var order = new Order(OrderId.newId(), new CustomerId(command.customerId()),
+                new RestaurantId(menu.code()), lines, total, Instant.now(clock));
         repository.save(order);
         LOG.info("event=order_intake_recorded orderId={} restaurantId={} itemCount={} quotedTotalCents={}",
                 order.id(), order.restaurantId(), order.lines().size(), order.quotedTotalCents());

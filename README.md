@@ -62,3 +62,8 @@ Read [the Lesson 1.1.3 contract](docs/engineering/LESSON_1_1_3_COMMAND_FACT_CONT
 ## Execution continuity
 
 Each academy lesson must reference an immutable platform SHA, relevant tests and the implementation's actual limits. Lesson 1.1.3 will add command/fact semantics without pretending the current intake is merchant approval or payment.
+
+
+## Lesson 1.1.4 — Identity and local authority
+
+The domain now uses immutable typed `OrderId`, `CustomerId` and `RestaurantId` values, with the original public JSON UUID/String identifiers intact. The in-memory repository accepts new order identities only and refuses replacement under an existing ID. This prevents accidental mutation but is **not** crash-durable, a versioning protocol or a safe HTTP retry mechanism. See [engineering design](docs/engineering/LESSON_1_1_4_IDENTITY_AUTHORITY_CONTRACT.md) and [Lesson 1.1.4 checkpoint](checkpoints/LESSON_1_1_4.md). Merchant and payment outcomes remain `PENDING` and `NOT_STARTED` respectively.

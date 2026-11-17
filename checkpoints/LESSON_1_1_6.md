@@ -29,5 +29,5 @@ These states encode one **illustrative teaching policy** for the isolated model.
 
 - Pre-change baseline: `ea17135cdc1974d89d78ce78931bb63cc5e9544e`.
 - Run `./mvnw test` (or `mvn test` if wrapper absent), `./mvnw package`, and packaged-jar HTTP 201/422 intake smoke. Record exact CI and immutable revision before marking this checkpoint complete.
-- Current checkpoint status: **candidate, CI and runtime evidence pending**.
+- **Verification:** [GitHub Actions run 44052994889](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44052994889) passed on immutable feature revision `7c89a3e9ece643b486d6132613d12e1424312cb6`: **34/34 JUnit tests**, Maven package succeeded, runnable jar verified, live HTTP 201 intake and 422 business rejection smoke passed. This documentation commit and any merge need their own CI verification.
 - Next lesson 1.1.7 may add guards after current acceptance; do not implement future policy here.

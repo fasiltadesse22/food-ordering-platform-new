@@ -37,6 +37,9 @@ public record Order(
     public UUID customerId() { return customerIdentity.value(); }
     public String restaurantId() { return restaurantIdentity.value(); }
 
+    /** A truthful lifecycle view of this already-recorded local intake; not merchant acceptance. */
+    public OrderLifecycle intakeLifecycle() { return OrderLifecycle.recorded(orderIdentity); }
+
     public String intakeStatus() { return "REQUESTED_AWAITING_RESTAURANT"; }
     public String restaurantDecision() { return "PENDING"; }
     public String paymentStatus() { return "NOT_STARTED"; }

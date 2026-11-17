@@ -70,7 +70,14 @@ class LifecycleModelsTest {
     }
 
     @Test void orderModelDoesNotApprovePolicyDependentClosure() {
-        var recorded = OrderLifecycle.recorded(order);
+        var initial=OrderLifecycle.newRequest(order);
+        var intake=initial.decide(OrderLifecycle.Action.RECORD_INTAKE);
+        assertTrue(intake.accepted());
+        assertEquals(OrderLifecycle.State.NEW,initial.state());
+        assertEquals(OrderLifecycle.State.REQUESTED,intake.next().state());
+        assertEquals(order,intake.next().orderId());
+        assertNotNull(intake.fact());
+        var recorded = intake.next();
         for(var action: OrderLifecycle.Action.values()) {
             var result=recorded.decide(action);
             assertFalse(result.accepted());

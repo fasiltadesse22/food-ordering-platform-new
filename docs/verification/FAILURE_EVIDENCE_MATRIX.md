@@ -1,0 +1,24 @@
+# Failure-evidence matrix — current Java baseline through Lesson 1.1.7
+
+**Claim policy:** This document records **observed and absent** guarantees. It is not a certification of production reliability. Java implementation evidence: [merged source](https://github.com/fasiltadesse22/food-ordering-platform-new/tree/8c5e5144b40adbd8679f4fe3f8046020b0279d2b), [59-test Maven/HTTP CI](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071). Re-run when code changes.
+
+| Mechanism / claim | Failure case | Actual executable test | What was established | Classification | Next experiment |
+|---|---|---|---|---|---|
+| Request-intake validation / HTTP mapping | Unknown menu item or malformed basket | `OrderControllerIntegrationTest`; packaged HTTP 422 in CI | Local request rejection, no successful intake response | **Verified** local behavior | Keep regression on each API change |
+| Local post-save fact ordering | Store writes then throws | `PlaceOrderDecisionTest.unknownStorageEffectDoesNotBecomeBusinessRejectionOrSuccessFact` | Fake store can effect write while caller sees unknown failure; no false business rejection/success fact | **Simulated** uncertain effect | When durable store exists, inject failure at transaction/write boundary |
+| Request retries | Lost response and repeated identical POST | `PlaceOrderDecisionTest.retryAfterLostResponseStillCreatesTwoDistinctIntakes` | **Two distinct records**, proving no logical-idempotency guarantee | **Verified negative** | Only when approved POL-08 defines intent, test one effect under duplicate retries |
+| Same-identity atomic create | Concurrent creates of same OrderId | `OrderIdentityContinuityTest.simultaneousCreateOfSameIdentityDoesNotOverwriteOrCreateVersion` | One process-local map's `putIfAbsent` prevents overwriting same identity in two-thread race | **Verified limited** | Test database/versioned update and multi-instance behavior when introduced |
+| Pure transition legality | Illegal merchant state/action, missing assumed actor or basket evidence | `GuardedTransitionsTest`, `LifecycleModelsTest` | Model rejects and preserves state with no illustrative success fact | **Verified pure model only** | Real authenticated source + persisted/versioned commit test when introduced |
+| Duplicate provider messages | Reordered/duplicate external callbacks | No provider or message transport exists | Nothing about real delivery or deduplication | **Not implemented** | Create transport/fault harness only in relevant roadmap lesson |
+| Crash during intake | Kill server after storage write / before response | No process-kill/restart experiment | No crash-safety or recovery guarantee | **Not verified; not implemented** | After persistent store, terminate process and verify recovery |
+| Restart durability | Restart JVM | Volatile `ConcurrentHashMap` stores data | Records are **expected to disappear**, not durable | **Not implemented** | Restart test once durable store implemented |
+| Cross-instance consistency | Two JVMs create/read | No shared durable store or multi-process harness | No coherent shared-order state | **Not implemented** | Multi-instance experiment only when relevant |
+| Concurrent merchant ACCEPT vs REJECT | Two competing updates on source state | Pure evaluator only; no merchant persistence | No atomic compare-and-set or authoritative source reconciliation | **Not implemented** | Deterministic barrier + versioned persistence race |
+| Unknown payment result | Provider capture then response loss | `PaymentAttemptLifecycle` simulated SUBMITTED_UNKNOWN | Model distinguishes uncertainty, **no bank effect** | **Simulated only** | Provider-test adapter + fault injection once authorized |
+| Distributed transactions / consensus | Partial failure, partition, leader loss | No distributed boundary exists | No atomic distributed commit, consensus, or global order | **Not implemented** | Design real experiments only when protocol exists |
+
+### Mandatory failure experiment contract (future lessons)
+
+For every newly claimed *reliability* property, checkpoint must record: (1) precisely scoped guarantee/authority; (2) positive case; (3) negative/rejected case; (4) injected relevant fault—crash, timeout, retry, duplicate, race or partial failure as applicable; (5) recovered state and invariant, with source evidence; (6) test command/environment and immutable run; (7) unsupported conditions and next experiment. If a mechanism is only a pure model, mark **SIMULATED**, not **VERIFIED DISTRIBUTED**. An absent participant is **NOT IMPLEMENTED**, never “resilient.”
+
+Do not introduce fault-test infrastructure without a mechanism to test, and do not treat fixture or mocked events as bank or merchant facts. [Business-policy authority](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/domain/CLUSTER_1_1_LESSON_1_1_5_DECISION_BACKLOG.md) remains separate.

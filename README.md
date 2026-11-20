@@ -1,69 +1,47 @@
-# Food Ordering Platform — Lessons 1.1.2 and 1.1.3
+# Food Ordering Platform — Current Java Baseline (through Lesson 1.1.7)
 
-**Source of truth:** [Academy roadmap](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/roadmap/MASTER_ROADMAP_V1.md) and [Lesson 1.1.1 domain discovery](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/domain/CLUSTER_1_1_LESSON_1_1_1_DOMAIN_DISCOVERY.md).
+Java 21 · Spring Boot 4.1.2 · Maven · **one deployable, intentionally limited order-request intake**. This is an evolving engineering exercise, **not** a production food-delivery system.
 
-## First genuine workflow: create an order *request*
+The platform accepts a customer-supplied basket for the synthetic restaurant fixture, verifies fixture items, calculates a demo quotation, and records an immutable order-request snapshot in **volatile, process-local memory**. A successful HTTP 201 means **request recorded**, not merchant acceptance, durable storage, authorization, payment capture, or delivery.
 
-This is a **single runnable Spring Boot application** on Java 21 and Spring Boot 4.1.2. It validates an incoming Customer's requested basket against a synthetic restaurant fixture, computes a quoted demo total, and stores a new order request in volatile process memory. **No merchant accepts anything and no payment occurs.**
+**Current system and ownership:** [docs/architecture/CURRENT_STATE.md](docs/architecture/CURRENT_STATE.md)  
+**Architectural decision:** [ADR 0001](docs/adr/0001-single-deployable-intake.md)  
+**API contract:** [UC-001](docs/usecases/UC-001-place-order.md)  
+**Future-lesson startup contract:** [docs/governance/SESSION_STARTUP.md](docs/governance/SESSION_STARTUP.md)  
+**Documentation ownership:** [docs/governance/DOCUMENT_OWNERSHIP.md](docs/governance/DOCUMENT_OWNERSHIP.md)  
+**Reliability evidence:** [docs/verification/FAILURE_EVIDENCE_MATRIX.md](docs/verification/FAILURE_EVIDENCE_MATRIX.md)
 
-## Requirements
+## Run locally
 
-- Java 21
-- Maven 3.6.3+ (prefer Maven 3.9+)
-
-Run:
+Requirements: Java 21 and Maven (prefer 3.9+).
 
 ```bash
-mvn -B verify
+mvn -B -ntp verify
 mvn spring-boot:run
 ```
 
-Open another terminal:
+In a second terminal:
 
 ```bash
 curl http://localhost:8080/api/restaurants/cedar-kitchen/menu
 curl -i -X POST http://localhost:8080/api/orders \
-  -H 'Content-Type: application/json' -H 'X-Request-ID: walkthrough-001' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Request-ID: walkthrough-001' \
   -d '{"customerId":"6f1595f8-02bc-4484-9800-810a98b611ee","restaurantId":"cedar-kitchen","items":[{"menuItemCode":"lentil-bowl","quantity":2}]}'
 ```
 
-A successful response: **HTTP 201**, Location `/api/orders/{orderId}`, `intakeStatus=REQUESTED_AWAITING_RESTAURANT`, `restaurantDecision=PENDING`, `paymentStatus=NOT_STARTED`, `quotedTotalCents=2500` in **synthetic USD fixture units**. Follow the Location with GET within the same running process.
+A valid request returns **201 Created**, Location `/api/orders/{orderId}`, `intakeStatus=REQUESTED_AWAITING_RESTAURANT`, `restaurantDecision=PENDING`, `paymentStatus=NOT_STARTED`, and `quotedTotalCents=2500` in synthetic USD fixture units. GET the Location while the same process is running.
 
-Try an unavailable item by replacing `lentil-bowl` with `seasonal-special`: **HTTP 422**, `ITEM_UNAVAILABLE`. Try `quantity=0`: **HTTP 400**. The correlation header `X-Request-ID` helps log tracing; it is **not** an idempotency key.
+Try `seasonal-special`: **422 ITEM_UNAVAILABLE**. Malformed input/quantity zero: **400**. `X-Request-ID` is correlation metadata, **not an idempotency key**. Repeating POST may create another distinct order.
 
-## Architecture
+## What is modeled, not executed
 
-```text
-HTTP request
-   → OrderController [input contract and 201/4xx mapping]
-   → PlaceOrderService [application use case + business decisions]
-      → MenuCatalog [synthetic server-owned demo menu adapter]
-      → Order [immutable domain intake fact]
-      → OrderRepository [ConcurrentHashMap adapter, volatile]
-   → 201 Created [request recorded; merchant PENDING; payment NOT_STARTED]
-```
+Later lessons introduced typed identities, explicit Order, RestaurantDecision and PaymentAttempt lifecycle models, guarded merchant decision **candidates**, and a preparation **probe**. These classes are *pure educational models*; there is no merchant API, provider integration, kitchen execution, real refund, authenticated actor, committed merchant transition, or external business fact. See [Lesson 1.1.7 engineering contract](docs/engineering/LESSON_1_1_7_GUARDED_TRANSITION_CONTRACT.md).
 
-See [UC-001 specification](docs/usecases/UC-001-place-order.md) and [ADR 0001](docs/adr/0001-single-deployable-intake.md).
+There is **no restart durability, request idempotency, cross-instance consistency, distributed transaction, message delivery protocol, or consensus**. Real limitations, tested negative behaviors, and missing failure experiments are tracked in [the evidence matrix](docs/verification/FAILURE_EVIDENCE_MATRIX.md). POL-01–POL-10 remain unresolved in the [academy policy backlog](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/domain/CLUSTER_1_1_LESSON_1_1_5_DECISION_BACKLOG.md).
 
-## Explicit missing guarantees
+## Verification and lesson continuity
 
-No persistent database, process-restart durability, checkout authentication/authorization, idempotency/retry safety, synchronized multi-instance state, race-control guarantees, live merchant inventory, price contracts, actual restaurant acceptance, payment provider, refund, delivery, tax or production deployment. This is **real runnable use-case code** under a narrow and honest contract, not production-ready commerce.
+CI runs Maven verification, packages and starts the application, and smoke-checks HTTP 201/422. Governance checks validate local documentation/architecture boundaries; neither CI nor the simulators prove remote guarantees. The last feature implementation was [Lesson 1.1.7, Java PR #4](https://github.com/fasiltadesse22/food-ordering-platform-new/pull/4), merged at `8c5e5144b40adbd8679f4fe3f8046020b0279d2b`, with [59-test post-merge verification](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071). Its [historical checkpoint](checkpoints/LESSON_1_1_7.md) records that execution, not the newest documentation commit.
 
-## Verification
-
-`mvn -B -ntp verify` runs JUnit domain/application/HTTP integration tests; [GitHub Actions](https://github.com/fasiltadesse22/food-ordering-platform-new/actions) independently reports actual outcome. Do not claim a passing test unless inspected.
-
-## Lesson 1.1.3 — explicit command decisions and local facts
-
-A typed \`PlaceOrderOutcome\` now distinguishes successful local request intake from business rejection. \`OrderRequestRecorded\` is constructed only after the volatile repository's save returns normally. Infrastructure errors remain uncertain; rejected commands never generate a success fact. The existing \`place()\` and HTTP response behavior remain compatible.
-
-Read [the Lesson 1.1.3 contract](docs/engineering/LESSON_1_1_3_COMMAND_FACT_CONTRACT.md). This is not event publication, durable storage, merchant acceptance, payment processing or idempotency.
-
-## Execution continuity
-
-Each academy lesson must reference an immutable platform SHA, relevant tests and the implementation's actual limits. Lesson 1.1.3 will add command/fact semantics without pretending the current intake is merchant approval or payment.
-
-
-## Lesson 1.1.4 — Identity and local authority
-
-The domain now uses immutable typed `OrderId`, `CustomerId` and `RestaurantId` values, with the original public JSON UUID/String identifiers intact. The in-memory repository accepts new order identities only and refuses replacement under an existing ID. This prevents accidental mutation but is **not** crash-durable, a versioning protocol or a safe HTTP retry mechanism. See [engineering design](docs/engineering/LESSON_1_1_4_IDENTITY_AUTHORITY_CONTRACT.md) and [Lesson 1.1.4 checkpoint](checkpoints/LESSON_1_1_4.md). Merchant and payment outcomes remain `PENDING` and `NOT_STARTED` respectively.
+The [React/TypeScript academy](https://github.com/fasiltadesse22/distributed-systems-engineering-academy) is a **separate Git repository** that owns the roadmap, deep lesson manuscripts, policy backlog, simulations and progress. No monorepo or synchronized commit assumption. The future target is a **progressively modular monolith** before any evidence-justified remote extraction; do not create fake service boundaries for lessons.

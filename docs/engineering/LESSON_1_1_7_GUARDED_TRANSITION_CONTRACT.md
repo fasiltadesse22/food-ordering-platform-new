@@ -2,7 +2,7 @@
 
 **Roadmap:** Master Roadmap V1 · Cluster 1.1 · Chapter 2 · Lesson 1.1.7 (Type A).  
 **Baseline Java:** `79024c3c36fe1a8cc6f71b79505601894d927507`.  
-**Status:** Feature candidate; no tests may be claimed until CI executes.
+**Status:** Pure Java guard implementation **verified on feature commit** `048b2322456951e6fc01b54889e851f96b8820d9`; post-merge SHA/CI still pending.
 
 ## Engineering question
 
@@ -73,4 +73,4 @@ No real merchant, kitchen, delivery, payment, refund, transaction isolation, dis
 
 ## Acceptance evidence
 
-**Pending:** CI run, exact Java feature SHA and merged SHA, Maven test count, packaging and live 201/422 smoke results. Update only after reading actual GitHub Actions output.
+**Executed evidence:** [GitHub Actions 44743299092](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44743299092), immutable feature SHA `048b2322456951e6fc01b54889e851f96b8820d9`: **59/59 JUnit tests**, including 25 new guard test invocations; **Maven BUILD SUCCESS**, packaged runnable jar, live HTTP 201 intake and HTTP 422 business rejection smoke both passed. **Merge and post-merge verification remain pending**; these test results do not establish any external merchant/kitchen fact.

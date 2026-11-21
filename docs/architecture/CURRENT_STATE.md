@@ -1,6 +1,6 @@
 # Current architecture and capabilities — through Lesson 1.1.9
 
-**Purpose:** Concise current capability index, **not** a new ADR, checkpoint or specification. Reviewed against the Java main implementation baseline `46b02d28f0acd4555d663e4361581f07b66c575d` (2026-11-20). Latest *business-code* implementation commit: `8c5e5144b40adbd8679f4fe3f8046020b0279d2b`; later governance/documentation commits do not imply a changed runtime. Revalidate against `main` at every new lesson; this line is historical evidence, not a moving SHA.
+**Purpose:** Concise current capability index, **not** a new ADR, checkpoint or specification. Reviewed against the merged Java Type A implementation `c7d3e2d741883b1aba5fcd1e51f4275ef48344ea` (2026-11-21), [post-merge CI](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44915338911). Later documentation-only commits do not imply changed runtime. Revalidate against `main` at every new lesson; this line is historical evidence, not a moving SHA.
 
 ## Executable architecture
 
@@ -54,5 +54,5 @@ No restart durability, durable simulated sessions, durable database, idempotency
 - [API contract](../usecases/UC-001-place-order.md), [ADR 0001](../adr/0001-single-deployable-intake.md).
 - [Latest implemented guard contract](../engineering/LESSON_1_1_7_GUARDED_TRANSITION_CONTRACT.md), [historical Lesson 1.1.7 checkpoint](../../checkpoints/LESSON_1_1_7.md).
 - [Failure evidence matrix](../verification/FAILURE_EVIDENCE_MATRIX.md), [session preflight](../governance/SESSION_STARTUP.md), [document ownership](../governance/DOCUMENT_OWNERSHIP.md).
-- [Java implementation verification](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071): 59/59 JUnit, Maven package, live HTTP 201/422. Always inspect latest `main` CI independently.
+- [Java implementation verification](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071): 72/72 JUnit, Maven package, live HTTP 201/422; [Lesson 1.1.9 post-merge CI](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44915338911). Always inspect latest `main` CI independently.
 - [Academy contract](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/contracts/DUAL_REPOSITORY_EXECUTION_CONTRACT_V1.md); no synchronized Git histories.

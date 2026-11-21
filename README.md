@@ -1,4 +1,4 @@
-# Food Ordering Platform — Current Java Baseline (through Lesson 1.1.7)
+# Food Ordering Platform — Current Java Baseline (through Lesson 1.1.9)
 
 Java 21 · Spring Boot 4.1.2 · Maven · **one deployable, intentionally limited order-request intake**. This is an evolving engineering exercise, **not** a production food-delivery system.
 
@@ -34,6 +34,10 @@ A valid request returns **201 Created**, Location `/api/orders/{orderId}`, `inta
 
 Try `seasonal-special`: **422 ITEM_UNAVAILABLE**. Malformed input/quantity zero: **400**. `X-Request-ID` is correlation metadata, **not an idempotency key**. Repeating POST may create another distinct order.
 
+## New in Lesson 1.1.9: executable local composition, not external fulfillment
+
+A Spring `LocalCompositionSimulation` service can attach a separately identified process-local **classroom scenario** to an existing order intake. It composes independent merchant, payment, preparation and journey states, with explicit hypothetical policy assumptions and a deterministic `SimulatedPaymentPort` test double. It records only `Simulated*` observations. There are no new public order/merchant/payment endpoints; the underlying Order remains unchanged. The [mechanism contract](docs/engineering/LESSON_1_1_9_LOCAL_COMPOSITION_CONTRACT.md) explains guards, source/authority limits, failure cases and the runnable Spring integration tests. None of these scenarios represents live charges, refunds, merchant decisions, kitchen activity or production business approval.
+
 ## What is modeled, not executed
 
 Later lessons introduced typed identities, explicit Order, RestaurantDecision and PaymentAttempt lifecycle models, guarded merchant decision **candidates**, and a preparation **probe**. These classes are *pure educational models*; there is no merchant API, provider integration, kitchen execution, real refund, authenticated actor, committed merchant transition, or external business fact. See [Lesson 1.1.7 engineering contract](docs/engineering/LESSON_1_1_7_GUARDED_TRANSITION_CONTRACT.md).
@@ -42,6 +46,6 @@ There is **no restart durability, request idempotency, cross-instance consistenc
 
 ## Verification and lesson continuity
 
-CI runs Maven verification, packages and starts the application, and smoke-checks HTTP 201/422. Governance checks validate local documentation/architecture boundaries; neither CI nor the simulators prove remote guarantees. The last feature implementation was [Lesson 1.1.7, Java PR #4](https://github.com/fasiltadesse22/food-ordering-platform-new/pull/4), merged at `8c5e5144b40adbd8679f4fe3f8046020b0279d2b`, with [59-test post-merge verification](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071). Its [historical checkpoint](checkpoints/LESSON_1_1_7.md) records that execution, not the newest documentation commit.
+CI runs Maven verification, packages and starts the application, and smoke-checks HTTP 201/422. Governance checks validate local documentation/architecture boundaries; neither CI nor the simulators prove remote guarantees. The previous business-code checkpoint was [Lesson 1.1.7, Java PR #4](https://github.com/fasiltadesse22/food-ordering-platform-new/pull/4), merged at `8c5e5144b40adbd8679f4fe3f8046020b0279d2b`, with [59-test post-merge verification](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071). Its [historical checkpoint](checkpoints/LESSON_1_1_7.md) records that execution, not the newest documentation commit.
 
 The [React/TypeScript academy](https://github.com/fasiltadesse22/distributed-systems-engineering-academy) is a **separate Git repository** that owns the roadmap, deep lesson manuscripts, policy backlog, simulations and progress. No monorepo or synchronized commit assumption. The future target is a **progressively modular monolith** before any evidence-justified remote extraction; do not create fake service boundaries for lessons.

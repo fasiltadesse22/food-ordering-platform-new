@@ -1,4 +1,4 @@
-# Current architecture and capabilities — through Lesson 1.1.7
+# Current architecture and capabilities — through Lesson 1.1.9
 
 **Purpose:** Concise current capability index, **not** a new ADR, checkpoint or specification. Reviewed against the Java main implementation baseline `46b02d28f0acd4555d663e4361581f07b66c575d` (2026-11-20). Latest *business-code* implementation commit: `8c5e5144b40adbd8679f4fe3f8046020b0279d2b`; later governance/documentation commits do not imply a changed runtime. Revalidate against `main` at every new lesson; this line is historical evidence, not a moving SHA.
 
@@ -39,9 +39,15 @@ Future target: progressively establish owner-aligned business boundaries *within
 
 No production code may promote `CandidateIllustrative...` or a pure provider state to an authenticated external fact. All business policy decisions POL-01–POL-10 remain **UNRESOLVED**; source authority: [academy decision register](https://github.com/fasiltadesse22/distributed-systems-engineering-academy/blob/main/docs/domain/CLUSTER_1_1_LESSON_1_1_5_DECISION_BACKLOG.md).
 
+## Lesson 1.1.9 opt-in application composition (no public API change)
+
+The Spring `LocalCompositionSimulation` application service uses actual recorded intake `OrderId` as a prerequisite and records separate, ephemeral classroom `Snapshot`s; it **never updates** the canonical `Order` or the existing HTTP intake projection. It composes merchant, payment-attempt, preparation and journey phases. The `SimulatedPaymentPort` implemented by a deterministic local adapter is not a provider connection. Teaching policies must be expressly selected, unresolved choices fail closed, rejection retains the identical snapshot and no simulated success fact, and a captured-but-rejected session retains an unresolved financial position until a separately simulated refund observation. A lost simulator response leaves the attempt unknown. `ConcurrentHashMap.compute` serializes one-key learning transitions **within one JVM** only.
+
+**Evidence class:** runnable local Spring application simulation + JUnit integration tests. No authenticated merchant decision, provider debit/settlement, preparation action, refund obligation execution, persistent history, operational endpoint or versioned order update was added. See [canonical 1.1.9 mechanism contract](../engineering/LESSON_1_1_9_LOCAL_COMPOSITION_CONTRACT.md).
+
 ## Explicitly NOT implemented / NOT proved
 
-No restart durability, durable database, idempotency, retry-safe exactly-once customer intent, verified customer identity, merchant authentication/acceptance, provider authorization/capture/refund/settlement, kitchen work, delivery, versioned order update, transactional outbox, message delivery, concurrent merchant state commit, distributed failure isolation, cross-instance state, distributed transaction, linearizable agreement or consensus. Local tests do not change these facts.
+No restart durability, durable simulated sessions, durable database, idempotency, retry-safe exactly-once customer intent, verified customer identity, merchant authentication/acceptance, provider authorization/capture/refund/settlement, kitchen work, delivery, versioned order update, transactional outbox, message delivery, concurrent merchant state commit, distributed failure isolation, cross-instance state, distributed transaction, linearizable agreement or consensus. Local tests do not change these facts.
 
 ## Verify and navigate
 

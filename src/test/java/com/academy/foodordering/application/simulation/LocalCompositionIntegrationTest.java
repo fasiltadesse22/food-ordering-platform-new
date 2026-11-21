@@ -121,7 +121,7 @@ class LocalCompositionIntegrationTest {
         var id=order();scenarios.begin(id,EITHER);
         rejected(scenarios.advance(id,Command.of(Action.MERCHANT_ACCEPT,Actor.MERCHANT_OPERATOR)),"MERCHANT_EVIDENCE");
         rejected(scenarios.advance(id,Command.assumed(Action.MERCHANT_ACCEPT,Actor.CUSTOMER)),"MERCHANT_EVIDENCE");
-        rejected(scenarios.advance(id,kitchen(Action.START_PREPARATION)),"PREPARATION_GUARD");
+        rejected(scenarios.advance(id,kitchen(Action.START_PREPARATION)),"CAPTURE_BEFORE_PREP");
         applied(scenarios.advance(id,Command.of(Action.SUBMIT_PAYMENT,Actor.CUSTOMER)));
         rejected(scenarios.advance(id,new Command(Action.OBSERVE_CAPTURE,Actor.PAYMENT_SIMULATOR,false,
             SimulatedPaymentPort.Preset.CONFIRMED)),"SIMULATOR_EVIDENCE");
@@ -152,8 +152,9 @@ class LocalCompositionIntegrationTest {
     @Test void normalTeachingJourneyRequiresIndependentCaptureMerchantAndPreparationEvidence() {
         var id=order();scenarios.begin(id,EITHER);
         rejected(scenarios.advance(id,platform(Action.COMPLETE_JOURNEY)),"COMPLETION_GUARD");
-        rejected(scenarios.advance(id,kitchen(Action.START_PREPARATION)),"PREPARATION_GUARD");
+        rejected(scenarios.advance(id,kitchen(Action.START_PREPARATION)),"CAPTURE_BEFORE_PREP");
         pay(id);
+        rejected(scenarios.advance(id,kitchen(Action.START_PREPARATION)),"PREPARATION_GUARD");
         applied(scenarios.advance(id,merchant(Action.MERCHANT_ACCEPT)));
         applied(scenarios.advance(id,kitchen(Action.START_PREPARATION)));
         rejected(scenarios.advance(id,platform(Action.COMPLETE_JOURNEY)),"COMPLETION_GUARD");

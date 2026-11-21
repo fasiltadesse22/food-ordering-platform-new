@@ -1,6 +1,6 @@
 # Failure-evidence matrix — current Java baseline through Lesson 1.1.9
 
-**Claim policy:** This document records **observed and absent** guarantees. It is not a certification of production reliability. Java implementation evidence: [merged source](https://github.com/fasiltadesse22/food-ordering-platform-new/tree/8c5e5144b40adbd8679f4fe3f8046020b0279d2b), [59-test Maven/HTTP CI](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44745491071). Re-run when code changes.
+**Claim policy:** This document records **observed and absent** guarantees. It is not a certification of production reliability. Java implementation evidence: [merged source](https://github.com/fasiltadesse22/food-ordering-platform-new/tree/c7d3e2d741883b1aba5fcd1e51f4275ef48344ea), [72-test Maven/HTTP CI](https://github.com/fasiltadesse22/food-ordering-platform-new/actions/runs/44915338911). Re-run when code changes.
 
 | Mechanism / claim | Failure case | Actual executable test | What was established | Classification | Next experiment |
 |---|---|---|---|---|---|
